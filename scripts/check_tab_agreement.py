@@ -10,7 +10,8 @@ SRC = ROOT / "src"
 if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
-from bhs_hierarchy.graph import build_graph_for_selection, compute_depths, validate_selection_scope
+from bhs_hierarchy.check_tab import tab_agreement
+from bhs_hierarchy.graph import build_graph_for_selection, validate_selection_scope
 from bhs_hierarchy.tf_loader import load_bhsa
 
 
@@ -48,37 +49,16 @@ def main() -> int:
         verse_from=args.verse_from,
         verse_to=args.verse_to,
     )
-    depths = compute_depths(graph)
+    total, matched, mismatched, samples = tab_agreement(api, graph.nodes)
 
-    total = len(graph.nodes)
-    comparable = 0
-    matched = 0
-    mismatches: list[tuple[int, int, int]] = []
+    print(f"total={total}")
+    print(f"matched={matched}")
+    print(f"mismatched={mismatched}")
 
-    for node in graph.nodes:
-        tab = graph.tab(node)
-        depth = depths.get(node)
-        if tab is None or depth is None:
-            continue
-        comparable += 1
-        if tab == depth:
-            matched += 1
-        else:
-            mismatches.append((node, depth, tab))
-
-    print(f"selection_nodes={total}")
-    print(f"comparable_nodes={comparable}")
-    print(f"matched_nodes={matched}")
-    if comparable > 0:
-        pct = (matched / comparable) * 100
-        print(f"match_rate={pct:.2f}%")
-    else:
-        print("match_rate=n/a")
-
-    if mismatches:
+    if samples:
         print("\nTop mismatches:")
-        for node, depth, tab in mismatches[: args.max_mismatches]:
-            print(f"node={node}\tdepth={depth}\ttab={tab}\tsection={graph.section_label(node)}")
+        for node, tab, depth in samples[: args.max_mismatches]:
+            print(f"node={node}\ttab={tab}\tdepth={depth}\tsection={graph.section_label(node)}")
 
     return 0
 

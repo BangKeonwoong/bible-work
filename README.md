@@ -2,8 +2,11 @@
 
 BHSA `clause_atom` mother-daughter hierarchy tooling.
 
-Current implementation covers Stage A (core extraction + root selection + visualization)
-and includes an agreement checker for `mother`-depth vs BHSA `tab`.
+Current implementation includes:
+
+- Stage A: scope selection, root listing, graph render
+- PR#2: root normalization (`self-mother`, `code=0/dist=0`) and `check-tab`
+- PR#3: decisions file (`yaml/json`), mother overrides, CTT-like export
 
 ## Install
 
@@ -24,22 +27,41 @@ Show root candidates in a scope:
 bhs-hier roots --book Genesis --chapter 1 --verse-from 1 --verse-to 5
 ```
 
-Render selected root subtree (`root-index` is from `roots` output):
+Validate `mother` depth against BHSA `tab`:
 
 ```bash
-bhs-hier draw --book Genesis --chapter 1 --verse-from 1 --verse-to 5 --root-index 0 --out out/gen_1_1-5.svg
+bhs-hier check-tab --book Genesis --chapter 1 --verse-from 1 --verse-to 5
+```
+
+Create decisions file:
+
+```bash
+bhs-hier init-decisions --book Genesis --chapter 1 --verse-from 1 --verse-to 5 --out decisions/gen_1_1-5.yaml --root-index 0
+```
+
+Export CTT-like output using decisions (subtree only from selected roots):
+
+```bash
+bhs-hier ctt --book Genesis --chapter 1 --verse-from 1 --verse-to 5 --decisions decisions/gen_1_1-5.yaml --subtree --out out/gen_1_1-5.ctt.txt
+```
+
+Render graph with decisions overrides:
+
+```bash
+bhs-hier draw --book Genesis --chapter 1 --verse-from 1 --verse-to 5 --decisions decisions/gen_1_1-5.yaml --out out/gen_1_1-5.dot --fmt dot
 ```
 
 Scope options:
 
-- `--book` required
+- `--book` required unless `--decisions` is used
 - `--chapter` optional (omit for whole book)
 - `--verse-from`, `--verse-to` optional (when `--chapter` is set)
+- `--decisions` optional for `draw`/`ctt` (uses decisions `scope`, `roots`, `overrides`)
 - `--version` BHSA dataset version (default `2021`)
 
 ## Validation Script
 
-Compare computed depth (from `mother`) vs BHSA `tab`:
+Legacy wrapper for `check-tab`:
 
 ```bash
 python scripts/check_tab_agreement.py --book Genesis --chapter 1 --verse-from 1 --verse-to 5

@@ -100,6 +100,7 @@ def build_graph_for_selection(
     chapter: Optional[int] = None,
     verse_from: Optional[int] = None,
     verse_to: Optional[int] = None,
+    overrides: Optional[Dict[int, Optional[int]]] = None,
 ) -> ClauseAtomGraph:
     """Build daughter->mother and mother->children maps for a text selection."""
     validate_selection_scope(
@@ -132,9 +133,25 @@ def build_graph_for_selection(
     for daughter in nodes:
         moms = api.E.mother.f(daughter) or []
         mom = _first_mother(moms)
+        if _is_root_node(api, daughter, mom):
+            mom = None
         if mom not in node_set:
             mom = None
         mother[daughter] = mom
+
+    if overrides:
+        for daughter, mom in overrides.items():
+            if daughter not in node_set:
+                continue
+            if mom == daughter:
+                mom = None
+            if mom is not None and mom not in node_set:
+                mom = None
+            mother[daughter] = mom
+
+    # Keep daughter ordering stable by rebuilding in node iteration order.
+    for daughter in nodes:
+        mom = mother[daughter]
         if mom is not None:
             children.setdefault(mom, []).append(daughter)
 
@@ -161,6 +178,19 @@ def _first_mother(raw_mothers: object) -> Optional[int]:
             if isinstance(item, str) and item.isdigit():
                 return int(item)
     return None
+
+
+def _is_root_node(api: BhsaApi, node: int, mother: Optional[int]) -> bool:
+    if mother == node:
+        return True
+    try:
+        code_field = getattr(api.F, "code", None)
+        dist_field = getattr(api.F, "dist", None)
+        code = code_field.v(node) if code_field is not None else None
+        dist = dist_field.v(node) if dist_field is not None else None
+        return code == 0 and dist == 0
+    except Exception:
+        return False
 
 
 def compute_depths(g: ClauseAtomGraph, roots: Optional[List[int]] = None) -> Dict[int, int]:
