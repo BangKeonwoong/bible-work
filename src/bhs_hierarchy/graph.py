@@ -68,6 +68,31 @@ def _clause_atoms_in_node(api: BhsaApi, node: int) -> List[int]:
     return list(api.L.d(node, otype="clause_atom"))
 
 
+def validate_selection_scope(
+    *,
+    book: str,
+    chapter: Optional[int] = None,
+    verse_from: Optional[int] = None,
+    verse_to: Optional[int] = None,
+) -> None:
+    """Validate scope values before TF node lookups."""
+    if not book or not book.strip():
+        raise ValueError("book is required")
+    if chapter is not None and chapter <= 0:
+        raise ValueError("chapter must be greater than 0")
+    if verse_from is not None and verse_from <= 0:
+        raise ValueError("verse_from must be greater than 0")
+    if verse_to is not None and verse_to <= 0:
+        raise ValueError("verse_to must be greater than 0")
+
+    if chapter is None and (verse_from is not None or verse_to is not None):
+        raise ValueError("chapter is required when verse_from/verse_to are provided")
+    if verse_to is not None and verse_from is None:
+        raise ValueError("verse_from is required when verse_to is provided")
+    if verse_from is not None and verse_to is not None and verse_to < verse_from:
+        raise ValueError(f"invalid verse range: {verse_from}-{verse_to}")
+
+
 def build_graph_for_selection(
     api: BhsaApi,
     *,
@@ -77,6 +102,13 @@ def build_graph_for_selection(
     verse_to: Optional[int] = None,
 ) -> ClauseAtomGraph:
     """Build daughter->mother and mother->children maps for a text selection."""
+    validate_selection_scope(
+        book=book,
+        chapter=chapter,
+        verse_from=verse_from,
+        verse_to=verse_to,
+    )
+
     if chapter is None:
         anchor = _node_from_book(api, book)
         nodes = _clause_atoms_in_node(api, anchor)

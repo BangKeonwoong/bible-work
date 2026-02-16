@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
+import shutil
 from typing import Sequence
 
 from graphviz import Digraph
@@ -16,6 +17,11 @@ class RenderOptions:
     max_label_len: int = 70
     show_code: bool = True
     show_tab: bool = False
+    fontname: str = "Noto Sans Hebrew"
+
+
+def graphviz_available() -> bool:
+    return shutil.which("dot") is not None
 
 
 def to_dot(
@@ -24,9 +30,9 @@ def to_dot(
     roots: Sequence[int],
     opts: RenderOptions = RenderOptions(),
 ) -> Digraph:
-    dot = Digraph("clause_atom_tree")
+    dot = Digraph("clause_atom_tree", encoding="utf-8")
     dot.attr(rankdir=opts.rankdir)
-    dot.attr("node", shape="box", fontsize="10")
+    dot.attr("node", shape="box", fontsize="10", fontname=opts.fontname)
 
     stack = list(roots)
     seen: set[int] = set()
@@ -67,8 +73,23 @@ def render(
     fmt: str = "svg",
     opts: RenderOptions = RenderOptions(),
 ) -> Path:
+    fmt = fmt.lower()
+    if fmt not in {"svg", "png", "pdf", "dot"}:
+        raise ValueError("fmt must be one of: svg, png, pdf, dot")
+
     dot = to_dot(g, roots=roots, opts=opts)
     out_path.parent.mkdir(parents=True, exist_ok=True)
+
+    if fmt == "dot":
+        dot_path = out_path.with_suffix(".dot")
+        dot_path.write_text(dot.source, encoding="utf-8")
+        return dot_path
+
+    if not graphviz_available():
+        raise RuntimeError(
+            "Graphviz `dot` executable not found. Install Graphviz and ensure `dot` is on PATH."
+        )
+
     stem = out_path.with_suffix("")
     try:
         rendered = dot.render(str(stem), format=fmt, cleanup=True)

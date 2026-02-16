@@ -17,6 +17,7 @@ dependencies = [
 
 [project.scripts]
 bhs-hier = "bhs_hierarchy.cli:app"
+bhs-hier-gui = "bhs_hierarchy.gui:main"
 
 [tool.setuptools]
 package-dir = {"" = "src"}

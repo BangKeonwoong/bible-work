@@ -2,8 +2,15 @@
 from __future__ import annotations
 
 import argparse
+import sys
+from pathlib import Path
 
-from bhs_hierarchy.graph import build_graph_for_selection, compute_depths
+ROOT = Path(__file__).resolve().parents[1]
+SRC = ROOT / "src"
+if str(SRC) not in sys.path:
+    sys.path.insert(0, str(SRC))
+
+from bhs_hierarchy.graph import build_graph_for_selection, compute_depths, validate_selection_scope
 from bhs_hierarchy.tf_loader import load_bhsa
 
 
@@ -27,6 +34,12 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> int:
     args = parse_args()
+    validate_selection_scope(
+        book=args.book,
+        chapter=args.chapter,
+        verse_from=args.verse_from,
+        verse_to=args.verse_to,
+    )
     api = load_bhsa(version=args.version, silent=True)
     graph = build_graph_for_selection(
         api,

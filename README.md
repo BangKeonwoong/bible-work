@@ -44,3 +44,40 @@ Compare computed depth (from `mother`) vs BHSA `tab`:
 ```bash
 python scripts/check_tab_agreement.py --book Genesis --chapter 1 --verse-from 1 --verse-to 5
 ```
+
+## GUI
+
+Launch the Tkinter GUI:
+
+```bash
+bhs-hier-gui
+```
+
+Or run from this repo without installing entry points:
+
+```bash
+./run_gui.sh
+```
+
+On Windows:
+
+```bat
+run_gui.bat
+```
+
+GUI fields:
+
+- `version`
+- `book`
+- `chapter` (optional)
+- `verse_from` / `verse_to` (optional)
+- output `format` (`svg`, `png`, `pdf`, `dot`)
+- output path
+
+Use `Load roots` to populate candidates, select one root in the list, then click
+`Render selected root`.
+
+Notes:
+
+- GUI requires Python `tkinter` (Linux often needs `python3-tk` package).
+- If Graphviz `dot` is not installed, choose `dot` output format to still export a graph source file.

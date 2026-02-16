@@ -57,10 +57,10 @@ def draw(
     verse_to: Optional[int] = typer.Option(None, help="End verse (inclusive)"),
     root_index: Optional[int] = typer.Option(None, help="Index from the roots command"),
     out: Path = typer.Option(Path("out/tree.svg"), help="Output path"),
-    fmt: str = typer.Option("svg", help="svg|png|pdf"),
+    fmt: str = typer.Option("svg", help="svg|png|pdf|dot"),
     version: str = typer.Option("2021", help="BHSA dataset version"),
 ) -> None:
-    """Render one root subtree as SVG/PNG/PDF."""
+    """Render one root subtree as SVG/PNG/PDF/DOT."""
     try:
         api = load_bhsa(version=version, silent=True)
         graph = build_graph_for_selection(
