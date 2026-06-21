@@ -1,0 +1,39 @@
+name: Hosea capital-X analysis
+
+on:
+  pull_request:
+    paths:
+      - "scripts/analyze_hosea_x_fronting.py"
+      - ".github/workflows/hosea-x-fronting.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  analyze:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install project
+        run: pip install -e .
+
+      - name: Run Hosea capital-X analysis
+        run: python scripts/analyze_hosea_x_fronting.py --version 2021 --out-dir out/hosea-x
+
+      - name: Upload analysis outputs
+        uses: actions/upload-artifact@v4
+        with:
+          name: hosea-capital-x-analysis
+          path: out/hosea-x
+          if-no-files-found: error
+          retention-days: 30
