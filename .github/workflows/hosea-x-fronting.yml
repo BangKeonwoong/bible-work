@@ -1,4 +1,5 @@
 name: Hosea capital-X analysis
+# Executes the reproducible research script in PR #1.
 
 on:
   pull_request:
