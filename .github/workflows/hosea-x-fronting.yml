@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - "scripts/analyze_hosea_x_fronting.py"
+      - "scripts/run_hosea_phase2_fixed.py"
       - ".github/workflows/hosea-x-fronting.yml"
   workflow_dispatch:
 
@@ -27,8 +28,8 @@ jobs:
       - name: Install project
         run: pip install -e .
 
-      - name: Run Hosea capital-X analysis
-        run: python scripts/analyze_hosea_x_fronting.py --version 2021 --out-dir out/hosea-x
+      - name: Run Hosea whole-book clause-atom hierarchy analysis
+        run: python scripts/run_hosea_phase2_fixed.py --version 2021 --out-dir out/hosea-x
 
       - name: Upload analysis outputs
         uses: actions/upload-artifact@v4
